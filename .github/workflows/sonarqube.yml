@@ -32,6 +32,16 @@ jobs:
         run: |
           ./mvnw -version
 
+      - name: Compile Application
+        run: |
+          ./mvnw -B compile
+
+      - name: Verify Compiled Classes
+        run: |
+          test -d target/classes
+          echo "Compiled classes found:"
+          find target/classes -type f | head -10
+
       - name: Run SonarQube Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -40,4 +50,5 @@ jobs:
           ./mvnw -B sonar:sonar \
             -Dsonar.projectKey=great-big-example-application \
             -Dsonar.host.url="$SONAR_HOST_URL" \
-            -Dsonar.login="$SONAR_TOKEN"
+            -Dsonar.login="$SONAR_TOKEN" \
+            -Dsonar.java.binaries=target/classes
