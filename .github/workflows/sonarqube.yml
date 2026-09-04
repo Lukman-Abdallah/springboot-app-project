@@ -15,16 +15,21 @@ jobs:
     runs-on: self-hosted
 
     steps:
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Use Java 11 for SonarQube
+      # --------------------------------------------------
+      # JAVA 8 - Application Build Environment
+      # --------------------------------------------------
+
+      - name: Use Java 8 for Application Build
         run: |
-          export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+          export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
           echo "JAVA_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
           echo "$JAVA_HOME/bin" >> "$GITHUB_PATH"
 
-      - name: Verify Java
+      - name: Verify Java 8
         run: |
           java -version
 
@@ -41,6 +46,20 @@ jobs:
           test -d target/classes
           echo "Compiled classes found:"
           find target/classes -type f | head -10
+
+      # --------------------------------------------------
+      # JAVA 11 - SonarQube Scanner Environment
+      # --------------------------------------------------
+
+      - name: Use Java 11 for SonarQube
+        run: |
+          export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+          echo "JAVA_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Java 11
+        run: |
+          java -version
 
       - name: Run SonarQube Analysis
         env:
