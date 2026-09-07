@@ -190,11 +190,13 @@ jobs:
         run: |
           ls -lh /tmp/great-big-example-application-0.0.1.war
 
-      - name: Remove Previous UAT Deployment
+      - name: Recreate Tomcat UAT Container
         run: |
-          docker exec tomcat-uat rm -rf \
-            /usr/local/tomcat/webapps/great-big-example-application-0.0.1 \
-            /usr/local/tomcat/webapps/great-big-example-application-0.0.1.war
+          docker rm -f tomcat-uat 2>/dev/null || true
+          docker run -d \
+            --name tomcat-uat \
+            -p 8080:8080 \
+            tomcat:9-jdk8-temurin
 
       - name: Deploy WAR to Tomcat
         run: |
