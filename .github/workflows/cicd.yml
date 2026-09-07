@@ -209,6 +209,22 @@ jobs:
 
       - name: UAT HTTP Test
         run: |
-          sleep 10
-          curl -f \
-            http://localhost:8080/great-big-example-application-0.0.1/
+          URL="http://localhost:8080/great-big-example-application-0.0.1/"
+          MAX_ATTEMPTS=24
+          ATTEMPT=1
+
+          while [ "$ATTEMPT" -le "$MAX_ATTEMPTS" ]; do
+            echo "UAT attempt $ATTEMPT/$MAX_ATTEMPTS..."
+
+            if curl -fsS "$URL" > /dev/null; then
+              echo "UAT PASSED: Application returned HTTP 200."
+              exit 0
+            fi
+
+            echo "Application not ready yet. Waiting 5 seconds..."
+            sleep 5
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          echo "UAT FAILED: Application did not return HTTP 200 within 120 seconds."
+          exit 1
