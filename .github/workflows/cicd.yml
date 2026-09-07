@@ -162,3 +162,53 @@ jobs:
       - name: Deploy to Nexus
         run: |
           ./mvnw -B deploy -DskipTests
+
+
+
+  tomcat-uat:
+    name: Tomcat UAT
+    needs: nexus-deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Release WAR from Nexus
+        env:
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          curl -fL \
+            -u "$NEXUS_USERNAME:$NEXUS_PASSWORD" \
+            -o /tmp/great-big-example-application-0.0.1.war \
+            http://localhost:8081/repository/maven-releases/org/exampleapps/greatbig/great-big-example-application/0.0.1/great-big-example-application-0.0.1.war
+
+      - name: Verify WAR
+        run: |
+          ls -lh /tmp/great-big-example-application-0.0.1.war
+
+      - name: Remove Previous UAT Deployment
+        run: |
+          docker exec tomcat-uat rm -rf \
+            /usr/local/tomcat/webapps/great-big-example-application-0.0.1 \
+            /usr/local/tomcat/webapps/great-big-example-application-0.0.1.war
+
+      - name: Deploy WAR to Tomcat
+        run: |
+          docker cp \
+            /tmp/great-big-example-application-0.0.1.war \
+            tomcat-uat:/usr/local/tomcat/webapps/great-big-example-application-0.0.1.war
+
+      - name: Verify Tomcat Deployment
+        run: |
+          docker exec tomcat-uat ls -lh \
+            /usr/local/tomcat/webapps/great-big-example-application-0.0.1.war
+
+      - name: UAT HTTP Test
+        run: |
+          sleep 10
+          curl -f \
+            http://localhost:8080/great-big-example-application-0.0.1/
