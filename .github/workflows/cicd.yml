@@ -190,24 +190,28 @@ jobs:
         run: |
           ls -lh /tmp/great-big-example-application-0.0.1.war
 
-      - name: Recreate Tomcat UAT Container
+      - name: Stop Host Tomcat
         run: |
-          docker rm -f tomcat-uat 2>/dev/null || true
-          docker run -d \
-            --name tomcat-uat \
-            -p 8080:8080 \
-            tomcat:9-jdk8-temurin
+          /opt/tomcat9/bin/shutdown.sh 2>/dev/null || true
+          sleep 5
 
-      - name: Deploy WAR to Tomcat
+      - name: Remove Previous UAT Deployment
         run: |
-          docker cp \
-            /tmp/great-big-example-application-0.0.1.war \
-            tomcat-uat:/usr/local/tomcat/webapps/great-big-example-application-0.0.1.war
+          rm -rf /opt/tomcat9/webapps/great-big-example-application-0.0.1
+          rm -f /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
 
-      - name: Verify Tomcat Deployment
+      - name: Deploy WAR to Host Tomcat
         run: |
-          docker exec tomcat-uat ls -lh \
-            /usr/local/tomcat/webapps/great-big-example-application-0.0.1.war
+          cp /tmp/great-big-example-application-0.0.1.war \
+             /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
+
+      - name: Verify WAR Deployment
+        run: |
+          ls -lh /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
+
+      - name: Start Host Tomcat
+        run: |
+          /opt/tomcat9/bin/startup.sh
 
       - name: UAT HTTP Test
         run: |
