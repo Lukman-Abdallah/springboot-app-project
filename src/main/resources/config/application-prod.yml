@@ -46,7 +46,7 @@ spring:
                         connect_timeout: 120s
         jest:
             readTimeout: 10000
-            # uri: ${SEARCHBOX_SSL_URL}
+            uri: http://localhost:9200
     mail:
         host: localhost
         port: 25
