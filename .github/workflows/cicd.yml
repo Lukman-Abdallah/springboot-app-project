@@ -44,7 +44,7 @@ jobs:
 
       - name: Package WAR
         run: |
-          ./mvnw -B package -DskipTests
+          ./mvnw -B package -Pprod -DskipTests -Dskip.yarn=true
 
       - name: Verify WAR
         run: |
