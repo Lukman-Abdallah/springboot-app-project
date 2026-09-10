@@ -166,7 +166,7 @@ jobs:
 
 
   tomcat-uat:
-    name: Tomcat UAT
+    name: Docker Tomcat UAT
     needs: nexus-deploy
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: self-hosted
@@ -190,32 +190,30 @@ jobs:
         run: |
           ls -lh /tmp/great-big-example-application-0.0.1.war
 
-      - name: Stop Host Tomcat
+      - name: Stop Docker Tomcat
         run: |
-          /opt/tomcat9/bin/shutdown.sh 2>/dev/null || true
-          sleep 5
+          docker stop tomcat9
 
       - name: Remove Previous UAT Deployment
         run: |
-          rm -rf /opt/tomcat9/webapps/great-big-example-application-0.0.1
-          rm -f /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
+          sudo rm -rf /opt/tomcat9/webapps/great-big-example-application-0.0.1
+          sudo rm -f /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
 
-      - name: Deploy WAR to Host Tomcat
+      - name: Deploy WAR to Docker Tomcat
         run: |
-          cp /tmp/great-big-example-application-0.0.1.war \
-             /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
+          sudo cp /tmp/great-big-example-application-0.0.1.war /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
+
+      - name: Start Docker Tomcat
+        run: |
+          docker start tomcat9
 
       - name: Verify WAR Deployment
         run: |
           ls -lh /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
 
-      - name: Start Host Tomcat
-        run: |
-          /opt/tomcat9/bin/startup.sh
-
       - name: UAT HTTP Test
         run: |
-          URL="http://localhost:8080/great-big-example-application-0.0.1/"
+          URL="http://localhost:8090/great-big-example-application-0.0.1/"
           MAX_ATTEMPTS=24
           ATTEMPT=1
 

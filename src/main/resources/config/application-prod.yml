@@ -21,7 +21,7 @@ spring:
             enabled: false
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:postgresql://localhost:5432/GreatBigExampleApplication
+        url: jdbc:postgresql://greatbigexampleapplication-postgresql:5432/GreatBigExampleApplication
         username: GreatBigExampleUser
         password: password
     jpa:
@@ -37,7 +37,7 @@ spring:
     data:
         elasticsearch:
             cluster-name:
-            cluster-nodes: localhost:9300
+            cluster-nodes: greatbigexampleapplication-elasticsearch:9300
             properties:
                 path:
                     home: target/elasticsearch
@@ -46,7 +46,7 @@ spring:
                         connect_timeout: 120s
         jest:
             readTimeout: 10000
-            uri: http://localhost:9200
+            uri: http://greatbigexampleapplication-elasticsearch:9200
     mail:
         host: localhost
         port: 25
