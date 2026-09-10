@@ -196,12 +196,12 @@ jobs:
 
       - name: Remove Previous UAT Deployment
         run: |
-          sudo rm -rf /opt/tomcat9/webapps/great-big-example-application-0.0.1
-          sudo rm -f /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
+          rm -rf /opt/tomcat9/webapps/great-big-example-application-0.0.1
+          rm -f /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
 
       - name: Deploy WAR to Docker Tomcat
         run: |
-          sudo cp /tmp/great-big-example-application-0.0.1.war /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
+          cp /tmp/great-big-example-application-0.0.1.war /opt/tomcat9/webapps/great-big-example-application-0.0.1.war
 
       - name: Start Docker Tomcat
         run: |
