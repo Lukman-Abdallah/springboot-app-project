@@ -42,9 +42,33 @@ jobs:
         run: |
           ./mvnw -B test
 
+      - name: Prepare Legacy npm
+        run: |
+          mkdir -p .local-npm
+          npm pack npm@5.10.0
+          tar -xzf npm-5.10.0.tgz -C .local-npm --strip-components=1
+          rm -f npm-5.10.0.tgz
+
+          mkdir -p .local-npm/bin
+
+          cat > .local-npm/bin/npm-wrapper <<'EOF'
+          #!/bin/sh
+          SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+          PROJECT_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)"
+          exec "$PROJECT_ROOT/node/node" "$PROJECT_ROOT/.local-npm/bin/npm-cli.js" "$@"
+          EOF
+
+          chmod +x .local-npm/bin/npm-wrapper
+          ln -sf npm-wrapper .local-npm/bin/npm
+
+          echo "$PWD/.local-npm/bin" >> "$GITHUB_PATH"
+          echo "$PWD/node/yarn/dist/bin" >> "$GITHUB_PATH"
+          echo "$PWD/node" >> "$GITHUB_PATH"
+          echo "NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt" >> "$GITHUB_ENV"
+
       - name: Package WAR
         run: |
-          ./mvnw -B package -Pprod -DskipTests -Dskip.yarn=true
+          ./mvnw -B package -Pprod -DskipTests
 
       - name: Verify WAR
         run: |
