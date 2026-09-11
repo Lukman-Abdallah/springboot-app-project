@@ -256,3 +256,54 @@ jobs:
 
           echo "UAT FAILED: Application did not return HTTP 200 within 120 seconds."
           exit 1
+
+  dockerhub-push:
+    name: Build and Push Docker Image
+    needs: tomcat-uat
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Validated WAR from Nexus
+        env:
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          mkdir -p target
+
+          curl -fL \
+            -u "$NEXUS_USERNAME:$NEXUS_PASSWORD" \
+            -o target/great-big-example-application-0.0.1.war \
+            http://localhost:8081/repository/maven-releases/org/exampleapps/greatbig/great-big-example-application/0.0.1/great-big-example-application-0.0.1.war
+
+      - name: Verify WAR
+        run: |
+          ls -lh target/great-big-example-application-0.0.1.war
+
+      - name: Verify Docker
+        run: |
+          docker --version
+
+      - name: Login to Docker Hub
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo "$DOCKERHUB_TOKEN" | docker login \
+            --username "$DOCKERHUB_USERNAME" \
+            --password-stdin
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            -t lukmanabdallah/great-big-example-application:0.0.1 \
+            .
+
+      - name: Push Docker Image
+        run: |
+          docker push \
+            lukmanabdallah/great-big-example-application:0.0.1
